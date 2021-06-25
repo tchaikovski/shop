@@ -1,11 +1,15 @@
-from PIL import Image
-
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.urls import reverse
 
 User = get_user_model()
+
+
+def get_product_url(obj, viewname):
+    ct_model = obj.__class__._meta.model_name
+    return reverse(viewname, kwargs={'ct_model': ct_model, 'slug': obj.slug})
 
 
 class MinResolutionErrorException(Exception):
@@ -16,7 +20,7 @@ class MaxResolutionErrorException(Exception):
     pass
 
 
-# todo: https://www.youtube.com/watch?v=jME4-T_hfhQ 1.54
+# todo: https://www.youtube.com/watch?v=jME4-T_hfhQ 3.07
 
 
 class LatestProductsManager:
@@ -69,17 +73,6 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        image = self.image
-        img = Image.open(image)
-        min_height, min_width = self.MIN_RESOLUTION
-        max_height, max_width = self.MAX_RESOLUTION
-        if img.height < min_height or img.width < min_width:
-            raise MinResolutionErrorException('Разрешение изображения меньше минимальнонго!')
-        if img.height > max_height or img.width > max_width:
-            raise MaxResolutionErrorException('Разрешение изображения больше максимального!')
-        return image
-
 
 class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
@@ -91,6 +84,10 @@ class Notebook(Product):
 
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
+
 
 
 class Smartphone(Product):
@@ -106,6 +103,10 @@ class Smartphone(Product):
 
     def __str__(self):
         return "{} : {}".format(self.category.name, self.title)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
+
 
 
 class CartProduct(models.Model):
@@ -139,11 +140,3 @@ class Customer(models.Model):
 
     def __str__(self):
         return "Покупатель {} {}".format(self.user.name, self.user.last_name)
-
-# class Specification(models.Model):
-#     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-#     object_id = models.PositiveIntegerField()
-#     name = models.CharField(max_length=255, verbose_name='Имя товара для характеристик')
-#
-#     def __str__(self):
-#         return "Характеристики для товара {}".format(self.name)
