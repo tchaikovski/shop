@@ -20,7 +20,7 @@ class MaxResolutionErrorException(Exception):
     pass
 
 
-# todo: https://www.youtube.com/watch?v=jME4-T_hfhQ 3.07
+# todo: https://www.youtube.com/watch?v=jME4-T_hfhQ 3.45
 
 
 class LatestProductsManager:
@@ -89,15 +89,14 @@ class Notebook(Product):
         return get_product_url(self, 'product_detail')
 
 
-
 class Smartphone(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
     display_type = models.CharField(max_length=155, verbose_name='Тип дисплея')
     resolution = models.CharField(max_length=155, verbose_name='Разрешение экрана')
     accum_volume = models.CharField(max_length=155, verbose_name='АКБ')
     ram = models.CharField(max_length=255, verbose_name='Память')
-    sd = models.BooleanField(default=True)
-    sd_volume = models.CharField(max_length=255, verbose_name='Максимальный объем встраиваемой памяти')
+    sd = models.BooleanField(default=True, verbose_name='Наличие SD карты')
+    sd_volume = models.CharField(max_length=255, null=True, blank=True, verbose_name='Максимальный объем встраиваемой памяти')
     main_cam_mp = models.CharField(max_length=255, verbose_name='Камера')
     frontal_cam_mp = models.CharField(max_length=255, verbose_name='Фронтальная камера')
 
@@ -107,6 +106,11 @@ class Smartphone(Product):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
 
+    # @property
+    # def sd(self):
+    #     if self.sd:
+    #         return 'Да'
+    #     return 'Нет'
 
 
 class CartProduct(models.Model):
@@ -120,7 +124,7 @@ class CartProduct(models.Model):
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
 
     def __str__(self):
-        return "Продукты: {} (для корзины)".format(self.product.title)
+        return "Продукты: {} (для корзины)".format(self.content_object.title)
 
 
 class Cart(models.Model):
@@ -128,6 +132,8 @@ class Cart(models.Model):
     products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
+    in_order = models.BooleanField(default=False)
+    for_anonymous_user = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)

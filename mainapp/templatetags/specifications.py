@@ -1,5 +1,8 @@
 from django import template
 from django.utils.safestring import mark_safe
+from mainapp.models import Smartphone
+
+
 register = template.Library()
 
 TABLE_HEAD = """
@@ -32,7 +35,7 @@ PRODUCT_SPEC = {
         'Заряд аккумулятора': 'accum_volume',
         'Память': 'ram',
         'Поддержка SD': 'sd',
-        'Максимальный объем встраиваемой памяти': 'sd_volume',
+        'Максимальный объем SD карты': 'sd_volume',
         'Камера': 'main_cam_mp',
         'Фронтальная камера': 'frontal_cam_mp'
     }
@@ -49,4 +52,9 @@ def get_product_spec(product, model_name):
 @register.filter
 def product_spec(product):
     model_name = product.__class__._meta.model_name
+    if isinstance(product, Smartphone):
+        if not product.sd:
+            PRODUCT_SPEC['smartphone'].pop('Максимальный объем SD карты', None)
+        else:
+            PRODUCT_SPEC['smartphone']['Максимальный объем SD карты'] = 'sd_volume'
     return mark_safe(TABLE_HEAD + get_product_spec(product, model_name) + TABLE_TAIL)
