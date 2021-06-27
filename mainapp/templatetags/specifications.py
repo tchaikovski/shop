@@ -1,43 +1,48 @@
 from django import template
 from django.utils.safestring import mark_safe
+
 from mainapp.models import Smartphone
 
 
 register = template.Library()
 
+
 TABLE_HEAD = """
-<table class="table">
-  <tbody>
-"""
+                <table class="table">
+                  <tbody>
+             """
+
 TABLE_TAIL = """
-  </tbody>
-</table>
-"""
+                  </tbody>
+                </table>
+             """
+
 TABLE_CONTENT = """
-<tr>
-    <td>{name}</td>
-    <td>{value}</td>
-</tr>
-"""
+                    <tr>
+                      <td>{name}</td>
+                      <td>{value}</td>
+                    </tr>
+                """
+
 PRODUCT_SPEC = {
     'notebook': {
         'Диагональ': 'diagonal',
-        'Тип дисплея': 'display',
+        'Тип дисплея': 'display_type',
         'Частота процессора': 'processor_freq',
-        'Память': 'ram',
+        'Оперативная память': 'ram',
         'Видеокарта': 'video',
-        'Время автономной работы': 'time_without_charge'
+        'Время работы аккумулятора': 'time_without_charge'
     },
     'smartphone': {
         'Диагональ': 'diagonal',
         'Тип дисплея': 'display_type',
         'Разрешение экрана': 'resolution',
         'Заряд аккумулятора': 'accum_volume',
-        'Память': 'ram',
-        'Поддержка SD': 'sd',
-        'Максимальный объем SD карты': 'sd_volume',
-        'Камера': 'main_cam_mp',
-        'Фронтальная камера': 'frontal_cam_mp'
+        'Оперативная память': 'ram',
+        'Наличие слота для SD карты': 'sd',
+        'Максимальный объем SD карты': 'sd_volume_max',
+        'Камера (МП)': 'main_cam_mp',
+        'Фронтальная камера (МП)': 'frontal_cam_mp'
     }
 }
 
@@ -56,5 +61,5 @@ def product_spec(product):
         if not product.sd:
             PRODUCT_SPEC['smartphone'].pop('Максимальный объем SD карты', None)
         else:
-            PRODUCT_SPEC['smartphone']['Максимальный объем SD карты'] = 'sd_volume'
+            PRODUCT_SPEC['smartphone']['Максимальный объем SD карты'] = 'sd_volume_max'
     return mark_safe(TABLE_HEAD + get_product_spec(product, model_name) + TABLE_TAIL)
